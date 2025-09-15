@@ -1,0 +1,460 @@
+{
+  "name": "rssauto",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            },
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -864,
+        -96
+      ],
+      "id": "4301808b-ed69-42d0-88e6-72f6539b290e",
+      "name": "Schedule Trigger",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8fe768e0-be02-41d9-9beb-4041444644f0",
+              "name": "feedurl",
+              "value": "https://www.zoomit.ir/feed",
+              "type": "string"
+            },
+            {
+              "id": "cf2fa5d2-3f69-4ef5-88b4-760f98675d4b",
+              "name": "telegramChatId",
+              "value": "@rssauto",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        176
+      ],
+      "id": "113bb122-beb9-446b-b8b3-67b15fe2272f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.engadget.com/rss.xml\n\n\n\n",
+        "options": {
+          "customFields": "",
+          "ignoreSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        -96
+      ],
+      "id": "b9896ede-4fb2-44ad-8edf-23e4d74c17df",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=عنوان: {{$json[\"title\"]}}\nلینک: {{$json[\"link\"]}}\nمحتوا: {{$json[\"content\"] || $json[\"description\"] || \"\"}}\n\nلطفاً متن بالا را در ۳ تا ۵ نکته کوتاه به فارسی خلاصه کن و در پایان لینک اصلی را بیاور.\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={   \"title\": \"{{$json.title}}\",   \"link\": \"{{$json.link}}\",   \"summary\": \"<خلاصه فارسی در 3-5 نکته>\" }"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=عنوان: {{$json.title}} لینک: {{$json.link}} محتوا: {{$json.content || $json.description || \"\"}}  لطفاً متن بالا را در ۳ تا ۵ نکته کوتاه به فارسی خلاصه کن و در بخش \"summary\" بنویس."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        144,
+        128
+      ],
+      "id": "d4af4fc8-ff7a-44d4-84b1-ebb5b164651a",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        240
+      ],
+      "id": "b2cf1bc6-c66c-4bff-8121-a79fa4bb7937",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "IqQytiEG0RIPlezH",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "@rssauto",
+        "text": "={{ $json[\"text\"] || $json[\"output\"] || $json[\"response\"] || $json[\"message\"] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        160
+      ],
+      "id": "e380ac46-366c-41af-8c09-63b8224ff903",
+      "name": "Send a text message",
+      "webhookId": "f729d4e6-9ca6-4cf0-a6a6-942f8a9d2917",
+      "credentials": {
+        "telegramApi": {
+          "id": "kzWzwdKLJ2mKnA14",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -112
+      ],
+      "id": "94fcd1e4-eab4-4158-bd4d-0e494b81ebe1",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7150b6e4-d05a-4fca-8859-712675acbd38",
+              "leftValue": "={{$json[\"media:content\"] && $json[\"media:content\"].url}}\n",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "496e4462-ee20-4d83-8fce-dd69a1893764",
+              "leftValue": "={{$json[\"media:thumbnail\"] && $json[\"media:thumbnail\"].url}}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        -128
+      ],
+      "id": "f3471cd9-c675-46fa-88ad-fbbb94461f06",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -112
+      ],
+      "id": "9fbbfdf0-8285-4cc1-aa3e-7fd890ff251d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "imageUrl",
+              "cssSelector": "meta[property=\"og:image\"], meta[property=\"og:image:secure_url\"], meta[name=\"twitter:image\"]",
+              "returnValue": "attribute",
+              "attribute": "content"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        -400
+      ],
+      "id": "c931b9ca-da00-4426-81fa-9ad5eed719f9",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "clashHandling": {
+            "values": {
+              "resolveClash": "addSuffix"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        -128
+      ],
+      "id": "5e69406f-10a0-4260-a695-d32dd387b7d0",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "@rssauto",
+        "file": "={{ $json.imageUrl }}\n\n\n",
+        "additionalFields": {
+          "caption": "={{ $json.text_1.summary || $json.text_1 || \"\" }}\n\n"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1136,
+        160
+      ],
+      "id": "928ff0a9-bb7a-45ad-8070-0063d6ba9601",
+      "name": "Send a photo message",
+      "webhookId": "ee16ace6-7d27-4e3c-b3ba-f1fa0cd9148c",
+      "credentials": {
+        "telegramApi": {
+          "id": "kzWzwdKLJ2mKnA14",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json[\"imageUrl\"] }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1136,
+        -128
+      ],
+      "id": "a27ea8ed-350b-48ce-9520-af327011f375",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c6cd6d27-7774-42a5-9be4-74d712a13f31",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7f5af6161a6271e2f462accaad53c7f07ad8a0a881f02d9252e2a3b034989268"
+  },
+  "id": "9A9ghPpMFG5qEDwA",
+  "tags": []
+}
