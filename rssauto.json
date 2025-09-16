@@ -6,12 +6,12 @@
         "rule": {
           "interval": [
             {
-              "field": "minutes",
-              "minutesInterval": 30
+              "triggerAtHour": 20,
+              "triggerAtMinute": 10
             },
             {
-              "field": "minutes",
-              "minutesInterval": 30
+              "triggerAtHour": 20,
+              "triggerAtMinute": 10
             }
           ]
         }
@@ -77,16 +77,16 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=عنوان: {{$json[\"title\"]}}\nلینک: {{$json[\"link\"]}}\nمحتوا: {{$json[\"content\"] || $json[\"description\"] || \"\"}}\n\nلطفاً متن بالا را در ۳ تا ۵ نکته کوتاه به فارسی خلاصه کن و در پایان لینک اصلی را بیاور.\n",
+        "text": "=Title: {{$json[\"title\"]}}\nLink: {{$json[\"link\"]}}\nContent: {{$json[\"content\"] || $json[\"description\"] || \"\"}}\n\nPlease summarize the text above into 3 to 5 short bullet points in English, and include the original link at the end.\n",
         "hasOutputParser": true,
         "messages": {
           "messageValues": [
             {
-              "message": "={   \"title\": \"{{$json.title}}\",   \"link\": \"{{$json.link}}\",   \"summary\": \"<خلاصه فارسی در 3-5 نکته>\" }"
+              "message": "={   \"title\": \"{{$json.title}}\",   \"link\": \"{{$json.link}}\",   \"summary\": \"<3-5 short bullet points in English>\" }\n"
             },
             {
               "type": "HumanMessagePromptTemplate",
-              "message": "=عنوان: {{$json.title}} لینک: {{$json.link}} محتوا: {{$json.content || $json.description || \"\"}}  لطفاً متن بالا را در ۳ تا ۵ نکته کوتاه به فارسی خلاصه کن و در بخش \"summary\" بنویس."
+              "message": "=Title: {{$json.title}} \nLink: {{$json.link}} \nContent: {{$json.content || $json.description || \"\"}}  \n\nPlease summarize the text above into 3 to 5 short bullet points in English, and write the result in the \"summary\" field.\n"
             }
           ]
         },
@@ -113,8 +113,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        224,
-        240
+        144,
+        384
       ],
       "id": "b2cf1bc6-c66c-4bff-8121-a79fa4bb7937",
       "name": "OpenAI Chat Model",
@@ -450,7 +450,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "c6cd6d27-7774-42a5-9be4-74d712a13f31",
+  "versionId": "fb000e7c-79c5-4a22-991c-68e33fb8e179",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "7f5af6161a6271e2f462accaad53c7f07ad8a0a881f02d9252e2a3b034989268"
